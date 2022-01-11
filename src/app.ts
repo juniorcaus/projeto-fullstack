@@ -1,16 +1,20 @@
-import express from 'express';
+import express, { Router } from 'express';
+
 import cors from 'cors';
 import mongoose from 'mongoose';
+import Controller from './controllers/controller';
 
 class App {
   public app: express.Application;
 
-  public constructor() {
+  public constructor(controllers: Controller[]) {
     this.app = express();
     this.app.use(cors());
 
     this.initMongoose();
     this.connectDatabase();
+    this.initExpressJson();
+    this.initControllers(controllers);
   }
 
   private initMongoose(): void {
@@ -23,6 +27,16 @@ class App {
       useUnifiedTopology: true,
       useFindAndModify: false,
       useCreateIndex: true,
+    });
+  }
+
+  private initExpressJson(): void {
+    this.app.use(express.json());
+  }
+
+  private initControllers(controllers: Controller[]):void {
+    controllers.forEach((controller) => {
+      this.app.use('/', controller.router);
     });
   }
 
